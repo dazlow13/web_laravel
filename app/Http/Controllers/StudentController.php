@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Http\Requests\StoreStudentRequest;
-use App\Http\Requests\UpdateStudentRequest;
+use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
@@ -32,18 +32,20 @@ class StudentController extends Controller
      */
     public function store(StoreStudentRequest $request)
     {
-        $student = new Student();
-        $student->first_name = $request->get('first_name');
-        $student->last_name = $request->get('last_name');
-        $student->gender = $request->get('gender');
-        $student->date_of_birth = $request->get('date_of_birth');
-        $student->save();
-        if ($student->wasRecentlyCreated) {
+        
+        // $student = new Student();
+        // $student->first_name = $request->get('first_name');
+        // $student->last_name = $request->get('last_name');
+        // $student->gender = $request->get('gender');
+        // $student->date_of_birth = $request->get('date_of_birth');
+        // $student->save();
+        Student::create($request->only([
+            'first_name',
+            'last_name',
+            'gender',
+            'date_of_birth',
+        ]));
         return redirect()->route('students.index');
-        } else {
-            return redirect()->back()
-                ->with('error', 'Lưu thất bại');
-        }
     }
 
     /**
@@ -59,15 +61,26 @@ class StudentController extends Controller
      */
     public function edit(Student $student)
     {
-        //
+        return view('students.edit',[
+            'student' => $student,
+            
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateStudentRequest $request, Student $student)
+    public function update(Request $request,Student $student)
     {
-        //
+        $student->update([
+        'first_name' => $request->input('first_name'),
+        'last_name' => $request->input('last_name'),
+        'gender' => $request->input('gender'),
+        'date_of_birth' => $request->input('date_of_birth'),
+    ]);
+
+        return redirect()->route('students.index');
+
     }
 
     /**
@@ -75,6 +88,7 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
-        //
+        $student->delete();
+        return redirect()->route('students.index');
     }
 }

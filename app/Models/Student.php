@@ -9,9 +9,14 @@ use Carbon\Carbon;
 
 class Student extends Model
 {
-    /** @use HasFactory<\Database\Factories\StudentFactory> */
+  
     use HasFactory;
-
+        protected $fillable = [
+        'first_name',
+        'last_name',
+        'gender',
+        'date_of_birth',
+    ];
     public $timestamps = false;
 
      protected function fullName(): Attribute
@@ -32,11 +37,6 @@ class Student extends Model
           get: fn () => $this->gender === 1 ? 'Male' : 'Female',
         );
     }
-    protected $fillable = [
-        'first_name',
-        'last_name',
-        'gender',
-        'date_of_birth',
-    ];
+
 
 }
