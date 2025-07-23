@@ -5,18 +5,27 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Http\Requests\StoreStudentRequest;
 use Illuminate\Http\Request;
+use App\Http\Requests\UpdateStudentRequest;
 
 class StudentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $students = Student::get();
+        $search = $request->get('q');
+ 
+        $students = Student::where('first_name','like',"%$search%")
+        ->orWhere('last_name','like',"%$search%")
+        ->paginate(2);
+        $students->appends(['q' => $search]);
+        
         return view('students.index',
-            ['students' => $students]
-        );
+            [
+            'students' => $students,
+            'search' => $search
+        ]);
     }
 
     /**
@@ -32,19 +41,14 @@ class StudentController extends Controller
      */
     public function store(StoreStudentRequest $request)
     {
-        
+  
         // $student = new Student();
         // $student->first_name = $request->get('first_name');
         // $student->last_name = $request->get('last_name');
         // $student->gender = $request->get('gender');
         // $student->date_of_birth = $request->get('date_of_birth');
         // $student->save();
-        Student::create($request->only([
-            'first_name',
-            'last_name',
-            'gender',
-            'date_of_birth',
-        ]));
+        Student::create($request->validated());
         return redirect()->route('students.index');
     }
 
@@ -70,14 +74,9 @@ class StudentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request,Student $student)
+    public function update(UpdateStudentRequest $request,Student $student)
     {
-        $student->update([
-        'first_name' => $request->input('first_name'),
-        'last_name' => $request->input('last_name'),
-        'gender' => $request->input('gender'),
-        'date_of_birth' => $request->input('date_of_birth'),
-    ]);
+        $student->update($request->validated());
 
         return redirect()->route('students.index');
 

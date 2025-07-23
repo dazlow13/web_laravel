@@ -21,8 +21,37 @@ class StoreStudentRequest extends FormRequest
      */
     public function rules(): array
     {
+         return [
+            'first_name' => [
+            'bail',
+            'required',
+            'string',
+            'max:255',
+        ],
+             'last_name' => [
+                'bail',
+                'required',
+                'string',
+                'max:255',
+            ],
+            'gender' => [
+                'bail',
+                'required',
+                'in:0,1',
+            ],
+            'date_of_birth' => [
+                'bail',
+                'required',
+                'date',
+                'before_or_equal:today',
+            ],
+        ];
+    }
+    public function messages(): array
+    {
         return [
-            
+            'first_name.required' => 'Bắt buộc nhập tên',
+            'last_name.required' => 'Bắt buộc nhập họ',
         ];
     }
 }

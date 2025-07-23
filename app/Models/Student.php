@@ -28,13 +28,13 @@ class Student extends Model
      protected function age(): Attribute
     {
         return Attribute::make(
-            get: fn () => Carbon::parse($this->date_of_birth)->age,
+            get: fn () => Carbon::parse($this->attributes['date_of_birth'])->age,
         );
     }
      protected function genderName(): Attribute
     {
         return Attribute::make(
-          get: fn () => $this->gender === 1 ? 'Male' : 'Female',
+          get: fn () => $this->attributes['gender'] === 1 ? 'Male' : 'Female',
         );
     }
 

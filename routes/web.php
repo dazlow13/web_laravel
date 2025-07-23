@@ -14,3 +14,6 @@ Route::resource('students',StudentController::class)->except(['show']);
 //     Route::put('/edit/{student}', [StudentController::class, 'update'])->name('update');
 //     Route::delete('/destroy/{student}', [StudentController::class, 'destroy'])->name('destroy');
 // });
+Route::get('/', function () {
+    return view('layout.master');
+});
