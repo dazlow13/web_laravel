@@ -1,4 +1,4 @@
-@extends('layout.master')
+{{-- @extends('layout.master')
 @section('content')
 <div class="card">
     <div class="card-header">
@@ -39,6 +39,8 @@
                     <th>Name</th>
                     <th>Age</th>
                     <th>Gender</th>
+                    <th>Actions</th>
+                    <th>Course</th>
                     <th>Edit</th>
                     <th>Delete</th>
                 </tr>
@@ -48,6 +50,8 @@
                         <td>{{ $student->full_name }} </td>
                         <td>{{ $student->age }}</td>
                         <td>{{ $student->gender_name }}</td>
+                        
+                        
                         <td> 
                             <a href="{{ route ('students.edit',$student) }}" class="btn btn-primary">
                                 Edit
@@ -87,4 +91,58 @@
         </div>
     </div>
 </div>
+@endsection --}}
+@extends('layout.master')
+
+@section('content')
+
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <!-- Nút thêm học sinh mới -->
+            <a href="{{ route('students.create') }}" class="btn btn-success">
+                Add New Student
+            </a>
+        </div>
+        <table id="students-table" class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Status</th>
+                    <th>Course</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
 @endsection
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+@endpush
+
+@push('scripts')
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#students-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route("students.api") }}',
+                columns: [
+                    { data: 'id', name: 'id' },
+                    { data: 'full_name', name: 'full_name' },
+                    { data: 'age', name: 'age' },
+                    { data: 'gender_name', name: 'gender_name' },
+                    { data: 'status_name', name: 'status_name' },
+                    { data: 'course_name', name: 'course_name' },
+                    { data: 'edit', name: 'edit', orderable: false, searchable: false },
+                    { data: 'delete', name: 'delete', orderable: false, searchable: false }
+                ],
+            });
+        });
+    </script>
+@endpush

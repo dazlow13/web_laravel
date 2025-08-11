@@ -6,26 +6,70 @@ use App\Models\Student;
 use App\Http\Requests\StoreStudentRequest;
 use Illuminate\Http\Request;
 use App\Http\Requests\UpdateStudentRequest;
+use Illuminate\Support\Facades\Route as FacadesRoute;
+use Illuminate\Support\Facades\View;
+use App\Enums\StudentStatusEnum;
+use App\Models\Course;
+use Yajra\DataTables\DataTables;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
+    private string $title = 'Student';
+    private $model;
+    public function __construct()
     {
-        $search = $request->get('q');
- 
-        $students = Student::where('first_name','like',"%$search%")
-        ->orWhere('last_name','like',"%$search%")
-        ->paginate(2);
-        $students->appends(['q' => $search]);
+        $this->model = new Student();
+        $routeName = FacadesRoute::currentRouteName();
+        $arr = explode('.', $routeName);
+        $arr = array_map('ucfirst', $arr);
+        $this->title = implode(' ', $arr);
+
+        $studentStatusEnum = StudentStatusEnum::asArray();
         
-        return view('students.index',
-            [
-            'students' => $students,
-            'search' => $search
-        ]);
+
+        View::share('title', $this->title);
+        View::share('studentStatusEnum', $studentStatusEnum);
+    }
+
+    public function index()
+    {
+        return view('students.index');
+    }
+
+
+public function api()
+    {
+        return DataTables::of(Student::query())
+            ->addColumn('full_name', function ($student) {
+                return $student->full_name; // Sử dụng accessor
+            })
+            ->addColumn('age', function ($student) {
+                return $student->age; // Sử dụng accessor
+            })
+            ->addColumn('gender_name', function ($student) {
+                return $student->gender_name; // Sử dụng accessor
+            })
+            ->addColumn('status_name', function ($student) {
+                return $student->status_name; // Sử dụng accessor
+            })
+            ->addColumn('course_name', function ($student) {
+                return $student->course_name ?: 'N/A'; // Sử dụng accessor, mặc định N/A nếu null
+            })
+            ->addColumn('edit', function ($student) {
+                return '<a href="' . route('students.edit', $student->id) . '" class="btn btn-sm btn-primary">Edit</a>';
+            })
+            ->addColumn('delete', function ($student) {
+                return '<form action="' . route('students.destroy', $student->id) . '" method="POST" onsubmit="return confirm(\'Are you sure?\');">' 
+                    . csrf_field() 
+                    . method_field('DELETE') 
+                    . '<button type="submit" class="btn btn-sm btn-danger">Delete</button>'
+                    . '</form>';
+            })
+            ->filterColumn('full_name', function ($query, $keyword) {
+                $query->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$keyword}%"]);
+            })
+            ->rawColumns(['edit', 'delete'])
+            ->make(true);
     }
 
     /**
@@ -33,7 +77,14 @@ class StudentController extends Controller
      */
     public function create()
     {
-        return view('students.create');
+        $courses = Course::query()->get();
+        return view(
+            'students.create'
+            ,
+            [
+                'courses' => $courses,
+            ]
+        );
     }
 
     /**
@@ -41,14 +92,14 @@ class StudentController extends Controller
      */
     public function store(StoreStudentRequest $request)
     {
-  
+
         // $student = new Student();
         // $student->first_name = $request->get('first_name');
         // $student->last_name = $request->get('last_name');
         // $student->gender = $request->get('gender');
         // $student->date_of_birth = $request->get('date_of_birth');
         // $student->save();
-        Student::create($request->validated());
+        $this->model::create($request->validated());
         return redirect()->route('students.index');
     }
 
@@ -63,21 +114,21 @@ class StudentController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Student $student)
+    public function edit($studentId)
     {
-        return view('students.edit',[
+        $student = $this->model::findOrFail($studentId);
+        return view('students.edit', [
             'student' => $student,
-            
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateStudentRequest $request,Student $student)
+    public function update(UpdateStudentRequest $request, $studentId)
     {
-        $student->update($request->validated());
-
+        $this->model::findOrFail($studentId)
+            ->update($request->validated());
         return redirect()->route('students.index');
 
     }
@@ -85,8 +136,9 @@ class StudentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Student $student)
+    public function destroy($studentId)
     {
+        $student = $this->model::findOrFail($studentId);
         $student->delete();
         return redirect()->route('students.index');
     }

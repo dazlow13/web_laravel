@@ -1,3 +1,5 @@
+@extends('layout.master')
+@section('content')
 <form action="{{ route('students.store') }}" method="POST">
     @csrf
     <div class="form-group">
@@ -20,5 +22,24 @@
     Birth Date
     <input type="date" name="date_of_birth">
     <br>
+    Status
+    @foreach ($studentStatusEnum as $option => $item)
+        <input type="radio" name="status" value="{{ $option }}" {{ old('status') == $option ? 'checked' : '' }}>
+        {{ $item }}
+        @if($errors->has('status'))
+            <span class="text-danger">{{ $errors->first('status') }}</span>
+        @endif        
+    @endforeach
+    <br>
+    Course
+    <select name="course_id">
+        @foreach ($courses as $course)
+            <option value="{{ $course->id }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>
+                {{ $course->name }}
+            </option>
+        @endforeach
+        </select>
     <button>Create</button>
+    </div>
 </form>
+@endsection

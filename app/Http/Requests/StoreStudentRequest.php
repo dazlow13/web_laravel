@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+
 class StoreStudentRequest extends FormRequest
 {
     /**
@@ -26,12 +27,14 @@ class StoreStudentRequest extends FormRequest
             'bail',
             'required',
             'string',
+            'min:2',
             'max:255',
         ],
              'last_name' => [
                 'bail',
                 'required',
                 'string',
+                'min:2',
                 'max:255',
             ],
             'gender' => [
@@ -44,6 +47,16 @@ class StoreStudentRequest extends FormRequest
                 'required',
                 'date',
                 'before_or_equal:today',
+            ],
+            'status' => [
+                'bail',
+                'required',
+                'in:0,1,2',
+            ],
+            'course_id' => [
+                'bail',
+                'required',
+                'exists:courses,id',
             ],
         ];
     }
